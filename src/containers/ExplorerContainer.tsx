@@ -1,3 +1,4 @@
+import React from "react";
 import { ExplorerGui } from "../components/ExplorerGui";
 import { ExplorerProps } from "../types";
 

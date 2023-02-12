@@ -1,4 +1,5 @@
 import { Box, Button, Card, Flex, Grid, Inline, Label, Select, Spinner, Stack } from "@sanity/ui";
+import React from "react";
 import { useEffect, useState } from "react";
 import { SanityClient } from "sanity";
 import { ExplorerProps } from "../types";

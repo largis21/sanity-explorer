@@ -20,5 +20,9 @@
     "sanity-plugin"
   ],
   "author": "Lars-Ivar Giskegjerde",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "react-icons": "^4.7.1",
+    "sanity": "^3.3.1"
+  }
 }
