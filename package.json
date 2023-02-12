@@ -1,0 +1,24 @@
+{
+  "name": "sanity-explorer",
+  "version": "0.0.1",
+  "description": "Sanity plugin for visualizing and mutating Sanity documents in raw tables",
+  "main": "src/index.ts",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "sanity",
+    "cms",
+    "headless",
+    "realtime",
+    "content",
+    "explorer",
+    "document",
+    "sanity-plugin"
+  ],
+  "author": "Lars-Ivar Giskegjerde",
+  "license": "ISC"
+}
