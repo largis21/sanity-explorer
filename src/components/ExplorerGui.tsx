@@ -1,8 +1,11 @@
 import { Box, Button, Card, Flex, Grid, Inline, Label, Select, Spinner, Stack } from "@sanity/ui";
-import React from "react";
+import React, { useMemo } from "react";
 import { useEffect, useState } from "react";
 import { SanityClient } from "sanity";
 import { ExplorerProps } from "../types";
+import { Column, TableInstance, useTable } from "react-table"
+import { generateTableColumns } from "../../lib/generateTableColumns";
+import { generateTableData } from "../../lib/generateTableData";
 
 export function ExplorerGui(props: ExplorerProps) {
     const { client } = props
@@ -13,6 +16,9 @@ export function ExplorerGui(props: ExplorerProps) {
 
     const [documentTypes, setDocumentTypes] = useState<Array<string> | null>(null)
     const [activeDocType, setActiveDocType] = useState<string | null>(null)
+
+    const [documents, setDocuments] = useState<Array<any>>([])
+    const [isLoading, setLoading] = useState(true)
 
     useEffect(() => {
         getDatasets()
@@ -54,13 +60,48 @@ export function ExplorerGui(props: ExplorerProps) {
     }, [activeDocType])
 
     async function getDocuments() {
+        setLoading(true)
+
         const fetchedDocuments = 
             await client.withConfig({ dataset: activeDataset }).fetch(`
             *[_type == "${activeDocType}"] 
             `)
 
-        console.log(fetchedDocuments)
+        if (!fetchedDocuments) {
+            throw new Error("Could not fetch documents")
+        }
+
+        setLoading(false)
+        setDocuments(fetchedDocuments)
     }
+
+    const documentsData = useMemo(
+        () => [
+            {
+                col1: "col1",
+                col2: "col2"
+            },
+            {
+                col1: "col1-2",
+                col2: "col2-2"
+            }
+        ], []
+    )
+    
+    //const [tableInstance, setTableInstace] = useState<TableInstance | null>(null)
+    const [tableColumns, setTableColumns] = useState<Array<any>>([])
+    const [tableData, setTableData] = useState<Array<any>>(generateTableData(documents))
+
+
+    useEffect(() => {
+        setTableColumns(generateTableColumns(documents))
+        setTableData(generateTableData(documents))
+    }, [documents])
+
+    const tableInstance = useTable({ columns: tableColumns, data: tableData })
+    //const tableInstance = null
+    
+    //const tableInstance = useTable({ columns: documentFields, data: documentsData})
 
     return (
         <>
@@ -103,9 +144,19 @@ export function ExplorerGui(props: ExplorerProps) {
                     </Box>
                 </Grid>
             </Header>
-            <Flex justify="center" align="center" height="fill">
-                <Spinner muted/>
-            </Flex>
+            {
+                !isLoading ? (
+                    <Card height="fill" overflow="auto">
+                        { tableInstance && <DocumentsTable tableInstance={tableInstance} /> }
+                    </Card>
+                )
+                : (
+                    <Flex justify="center" align="center" height="fill">
+                        <Spinner muted/>
+                    </Flex>
+                )
+
+            }
         </>
     )
 }
@@ -115,5 +166,61 @@ function Header({ children }: any) {
         <Card paddingX={3} paddingY={2} style={{borderBottom: "1px solid var(--card-border-color"}}>
             {children}
         </Card>
+    )
+}
+
+function DocumentsTable({ tableInstance }: { tableInstance: TableInstance }) {
+    const {headerGroups, rows, prepareRow } = tableInstance
+    return (
+        <table cellSpacing={0} style={{borderCollapse: "collapse"}}>
+            <thead 
+                style={{
+                    borderBottom: 'solid 1px gray', 
+                    background: 'var(--selected)'
+                }}
+            >
+                {headerGroups.map(headerGroup => (
+                    <tr 
+                        {...headerGroup.getHeaderGroupProps()}>
+                        {headerGroup.headers.map(column => (
+                            <th
+                                {...column.getHeaderProps()}
+                                style={{
+                                    fontWeight: 'bold',
+                                    padding: '4px',
+                                    borderRight: 'var(--border-gray)',
+                                    textAlign: "left",
+                                }}
+                            >
+                                {column.render('Header')}
+                            </th>
+                        ))}
+                    </tr>
+                ))}
+       </thead>
+       <tbody>
+         {rows.map(row => {
+           prepareRow(row)
+           return (
+             <tr {...row.getRowProps()}>
+               {row.cells.map(cell => {
+                 return (
+                   <td
+                     {...cell.getCellProps()}
+                     style={{
+                       padding: '4px',
+                       border: 'solid 1px gray',
+                       whiteSpace: "nowrap"
+                     }}
+                   >
+                     {cell.render('Cell')}
+                   </td>
+                 )
+               })}
+             </tr>
+           )
+         })}
+       </tbody>
+     </table>
     )
 }
